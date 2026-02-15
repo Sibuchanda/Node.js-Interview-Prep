@@ -20,20 +20,27 @@ app.get('/',(req,res)=>{
     res.send("This is home page");
 });
 
-// Create operation
-app.post('/users', async (req,res)=>{
-    const newuser = {
+// SignUp
+app.post('/register', async (req,res)=>{
+    const email = req.body.email;
+    const userExist = await User.findOne({email: email});
+    if(userExist){
+        return res.status(400).send("User exist!");
+    }
+    const newUser = await User.create({
+        email: req.body.email,
         name: req.body.name,
         age: req.body.age
-    }
-    await User.create(newuser);
-    res.status(201).send("User added successfully.");
+    })
+    const user = await newUser.save();
+    res.status(201).send("User registered successfully.");
 });
 
-// Read operation
-app.get('/users', async (req,res)=>{
-    const users = await User.find({});
-    res.status(200).send(users);
+// Login
+app.get('/login', async (req,res)=>{
+    const user = await User.findOne({email: req.body.email});
+    if(!user) return res.status(401).send("Invalid credentials")
+    res.status(200).json({name: user.name, email: user.email});
 });
 
 
